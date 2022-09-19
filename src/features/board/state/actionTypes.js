@@ -1,0 +1,5 @@
+export const actionTypes = {
+  ADD_ELEMENT: "ADD_ELEMENT",
+  DELETE_ELEMENT: "DELETE_ELEMENT",
+  CHECK_WORD: "CHECK_WORD",
+};
