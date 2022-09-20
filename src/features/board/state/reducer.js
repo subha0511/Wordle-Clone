@@ -92,7 +92,7 @@ export const boardReducer = (state, action) => {
       }
 
       for (let i = 0; i < size; i++) {
-        if (taken.has(i)) {
+        if (newBoard[activeRow][i].status === StatusStates.CORRECT_POS) {
           continue;
         }
         for (let j = 0; j < size; j++) {
@@ -100,6 +100,7 @@ export const boardReducer = (state, action) => {
             continue;
           }
           if (board[activeRow][i].value === word[j]) {
+            taken.add(j);
             board[activeRow][i].status = StatusStates.WRONG_POS;
             if (charactersTaken[word[j]] !== StatusStates.CORRECT_POS) {
               charactersTaken[word[j]] = StatusStates.WRONG_POS;
