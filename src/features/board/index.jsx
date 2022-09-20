@@ -1,17 +1,28 @@
-import { useEffect, useReducer } from "react";
-import {
-  initialState,
-  actionTypes,
-  boardReducer,
-  StatusStates,
-  BoardStates,
-} from "./state";
-import { useKeyPress } from "./hooks/useKeyPress";
+import { useEffect, useReducer, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import dayjs from "dayjs";
+import { initialState, actionTypes, boardReducer, BoardStates } from "./state";
+import { useKeyPress, useLocalStorage } from "./hooks";
+import { getRandomWord } from "./query/wordQuery";
 import Keyboard from "./Keyboard";
+import Cell from "./Cell";
+import Sidebar from "./Sidebar";
+import History from "./History";
 
 function Board() {
   const [state, dispatch] = useReducer(boardReducer, initialState);
-  const { board, charactersTaken, status } = state;
+  const [history, setHistory] = useLocalStorage("history", []);
+  const [showHistory, setShowHistory] = useState(false);
+
+  const toggleShowHistory = () => setShowHistory((prev) => !prev);
+
+  const { board, charactersTaken, status, size, word } = state;
+
+  const { isFetching } = useQuery(["word", size], () => getRandomWord(size), {
+    enabled: word.length !== size,
+    onSuccess: (data) =>
+      dispatch({ type: actionTypes.SET_WORD, payload: data[0] }),
+  });
 
   const keyPressed = useKeyPress();
 
@@ -32,56 +43,64 @@ function Board() {
     }
   }, [keyPressed]);
 
+  useEffect(() => {
+    if (status === BoardStates.PENDING) {
+      return;
+    }
+    const currentBoard = {
+      word,
+      size,
+      status,
+      timeStamp: dayjs(),
+      board: board.map((row) => row.map((cell) => cell.status)),
+    };
+    let newHistory = history;
+    newHistory.unshift(currentBoard);
+    setHistory(newHistory);
+  }, [status]);
+
   return (
-    <div className="mx-auto ">
-      <div className="grid place-items-center gap-2">
-        {board?.map((row, rowIndex) => (
-          <div
-            key={rowIndex}
-            className="grid grid-cols-5 gap-2 place-items-center"
-          >
-            {row.map((square, squareIndex) => (
-              <Cell key={squareIndex} data={square} boardStatus={status} />
-            ))}
-          </div>
-        ))}
+    <div className="mx-auto flex flex-col-reverse h-full p-5 md:p-8 md:flex-row items-center md:justify-center">
+      <div className="w-full md:w-1/2 md:min-h-screen">
+        {showHistory ? (
+          <History />
+        ) : (
+          <>
+            <div className="grid place-items-center gap-2">
+              {board?.map((row, rowIndex) => (
+                <div
+                  key={rowIndex}
+                  className={`grid grid-cols-${size} gap-2 place-items-center`}
+                >
+                  {row.map((square, squareIndex) => (
+                    <Cell
+                      key={squareIndex}
+                      data={square}
+                      boardStatus={status}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+            <div className="pt-5">
+              <Keyboard
+                currentKey={keyPressed}
+                charactersTaken={charactersTaken}
+                dispatch={dispatch}
+              />
+            </div>
+          </>
+        )}
       </div>
-      <div className="pt-5">
-        <Keyboard currentKey={keyPressed} charactersTaken={charactersTaken} />
-      </div>
+      <Sidebar
+        size={size}
+        dispatch={dispatch}
+        isLoading={isFetching}
+        showHistory={showHistory}
+        toggleHistory={toggleShowHistory}
+      />
     </div>
   );
 }
-
-const Cell = ({ data, boardStatus }) => {
-  const statusClassname = getStatusClassNames(data.status);
-
-  return (
-    <div
-      className={`w-14 h-14 rounded-md grid place-items-center
-      ${statusClassname}
-      ${data.value !== "" ? "bounce-once border-gray-600" : "border-gray-800"}`}
-    >
-      <div
-        className={`text-4xl font-medium duration-500 delay-300 ${
-          boardStatus !== BoardStates.PENDING ? "scale-2 opacity-0" : ""
-        }`}
-      >
-        {data.value}
-      </div>
-    </div>
-  );
-};
-
-const getStatusClassNames = (status) => `
-${
-  status === StatusStates.NOT_VISITED
-    ? "border bg-opacity-10 bg-gray-500 text-gray-300"
-    : "bg-opacity-80"
-} 
-${status === StatusStates.NOT_FOUND ? "bg-gray-600" : ""}
-${status === StatusStates.WRONG_POS ? "bg-yellow-500" : ""} 
-${status === StatusStates.CORRECT_POS ? "bg-green-500" : ""}
-`;
 
 export default Board;

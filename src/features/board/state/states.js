@@ -11,21 +11,24 @@ export const BoardStates = {
   FAILED: "FAILED",
 };
 
-export const initialState = {
-  size: 5,
-  board: Array(6)
+export const createBoard = (size) =>
+  Array(size + 1)
     .fill(null)
     .map(() =>
-      Array(5)
+      Array(size)
         .fill(null)
         .map(() => ({
           value: "",
           status: StatusStates.NOT_VISITED,
         }))
-    ),
+    );
+
+export const initialState = {
+  size: 5,
+  board: createBoard(5),
   activeRow: 0,
   activeCol: 0,
-  word: "STAND",
+  word: "",
   status: BoardStates.PENDING,
   charactersTaken: {},
 };

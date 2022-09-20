@@ -1,8 +1,38 @@
-import { StatusStates, BoardStates } from "./states";
+import { StatusStates, BoardStates, createBoard, initialState } from "./states";
 import { actionTypes } from "./actionTypes";
 
 export const boardReducer = (state, action) => {
   switch (action.type) {
+    //RESET WORD
+    case actionTypes.RESET_WORD: {
+      const size = state.size;
+      const word = "";
+      const board = createBoard(size);
+      return { ...initialState, word, size, board, charactersTaken: {} };
+    }
+
+    //SET WORD
+    case actionTypes.SET_WORD: {
+      const word = action.payload?.toUpperCase();
+      const size = word.length;
+      const board = createBoard(size);
+      return { ...initialState, word, size, board, charactersTaken: {} };
+    }
+
+    //INCREASE SIZE
+    case actionTypes.INCREASE_SIZE: {
+      const size = state.size + 1;
+      const board = createBoard(size);
+      return { ...initialState, board, size, word: "", charactersTaken: {} };
+    }
+
+    //DECREASE SIZE
+    case actionTypes.DECREASE_SIZE: {
+      const size = state.size - 1;
+      const board = createBoard(size);
+      return { ...initialState, board, size, word: "", charactersTaken: {} };
+    }
+
     //ADD CHARACTER
     case actionTypes.ADD_ELEMENT: {
       const { activeRow, activeCol, size, board } = state;
@@ -53,7 +83,7 @@ export const boardReducer = (state, action) => {
       });
 
       let taken = new Set();
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < size; i++) {
         if (newBoard[activeRow][i].value === word[i]) {
           taken.add(i);
           newBoard[activeRow][i].status = StatusStates.CORRECT_POS;
@@ -61,11 +91,11 @@ export const boardReducer = (state, action) => {
         }
       }
 
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < size; i++) {
         if (taken.has(i)) {
           continue;
         }
-        for (let j = 0; j < 5; j++) {
+        for (let j = 0; j < size; j++) {
           if (taken.has(j)) {
             continue;
           }
