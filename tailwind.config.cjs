@@ -1,7 +1,17 @@
+const defaultTheme = require("tailwindcss/defaultTheme");
+
 module.exports = {
-  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  content: [
+    "./pages/**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}",
+  ],
   theme: {
-    extend: {},
+    extend: {
+      screens: {
+        xs: "475px",
+        ...defaultTheme.screens,
+      },
+    },
   },
   safelist: [
     "grid-cols-4",
