@@ -32,3 +32,4 @@ ${status === StatusStates.CORRECT_POS ? "bg-green-500" : ""}
 `;
 
 export default Cell;
+

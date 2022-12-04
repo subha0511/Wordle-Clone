@@ -26,12 +26,12 @@ function Keyboard({ currentKey, charactersTaken, dispatch }) {
 
   return (
     <div className="grow mt-auto">
-      <div className="md:hidden grid place-items-center gap-2">
+      <div className="md:hidden grid place-items-stretch gap-2">
         {rowsMb.map((row) => (
-          <div className="flex items-center justify-center gap-2" key={row[0]}>
+          <div className="flex justify-center items-center gap-2" key={row[0]}>
             {row.map((board_key) => (
               <div
-                className={`py-2 px-2 rounded
+                className={`p-2 xs:p-3 rounded text-center
               ${getStatusClassname(charactersTaken[board_key])}
               ${
                 currentKey.toLowerCase() === board_key.toLowerCase()
